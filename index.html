@@ -3,7 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Bumper Bash: a 4-player couch bumper-car battle you play on one screen.">
+<meta name="description" content="Bumper Bash: a 4-player bumper-car battle. Play on one screen or invite friends online.">
+<meta name="theme-color" content="#121821">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Bumper Bash</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -88,14 +91,28 @@ button.card:hover{transform:translateY(-3px)}
 .keys{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center}
 kbd{font:800 11px/1 var(--font-body);color:var(--ink);background:var(--outline);border:1px solid var(--outline);border-bottom-width:3px;border-radius:5px;padding:3px 6px}
 .chip{all:unset;cursor:pointer;font:800 12px/1 var(--font-body);color:var(--ink);padding:6px 10px;border-radius:999px;background:var(--outline)}
-.touch{display:flex;justify-content:space-between;align-items:center;width:min(100%,560px);gap:16px;user-select:none;-webkit-user-select:none}
-.touch .g{display:grid;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(3,56px);gap:4px}
-.touch button{all:unset;display:grid;place-items:center;border-radius:14px;font-size:20px;color:var(--ink);background:var(--outline);border:2px solid var(--muted);touch-action:none}
-.touch button.on{background:var(--muted);color:var(--outline)}
-.touch .up{grid-area:1/2}.touch .lf{grid-area:2/1}.touch .rt{grid-area:2/3}.touch .dn{grid-area:3/2}
-.touch .g2{display:flex;gap:10px;align-items:center}
-.touch .skill{width:74px!important;height:74px!important;background:#3fd0ff!important;border-color:#3fd0ff!important}
-.touch .dash{width:96px;height:96px;border-radius:50%;background:var(--hazard);color:var(--outline);border-color:var(--hazard);font:400 16px/1 var(--font-display)}
+.touch{position:absolute;inset:auto 0 0 0;display:flex;justify-content:space-between;align-items:flex-end;padding:0 max(2.5cqw,env(safe-area-inset-right,0px)) 3cqh max(2.5cqw,env(safe-area-inset-left,0px));pointer-events:none;user-select:none;-webkit-user-select:none;z-index:5}
+.touch .tg{display:flex;gap:2cqw;align-items:flex-end;pointer-events:auto}
+.touch .col{display:flex;flex-direction:column;gap:2cqh;align-items:center}
+.touch button{all:unset;display:grid;place-items:center;width:max(54px,17cqh);height:max(54px,17cqh);border-radius:50%;font:400 max(13px,3.6cqh)/1 var(--font-display);color:var(--ink);background:rgba(18,24,33,.5);border:2px solid rgba(255,255,255,.55);touch-action:none;-webkit-tap-highlight-color:transparent}
+.touch button.on{background:rgba(255,255,255,.55);color:var(--outline)}
+.touch .gas{width:max(66px,22cqh);height:max(66px,22cqh);background:rgba(46,232,134,.55);border-color:#2ee886}
+.touch .rev{width:max(46px,13cqh);height:max(46px,13cqh)}
+.touch .boost{background:rgba(255,214,10,.6);border-color:var(--hazard);color:var(--outline)}
+.touch .skill{background:rgba(63,208,255,.55);border-color:#3fd0ff}
+.code{font:400 max(30px,11cqh)/1 var(--font-display);letter-spacing:.18em;color:var(--hazard)}
+.field{all:unset;box-sizing:border-box;background:var(--outline);color:var(--ink);border:2px solid var(--muted);border-radius:10px;padding:1.6cqh 2cqh;font:800 max(14px,3.4cqh)/1 var(--font-body);width:min(240px,60cqw);text-align:center}
+.field:focus-visible{outline:3px solid var(--hazard);outline-offset:2px}
+#codeIn{text-transform:uppercase;letter-spacing:.2em;width:min(170px,40cqw)}
+#remote{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:2}
+.toast{position:absolute;left:50%;top:2cqh;transform:translateX(-50%);z-index:6;background:var(--outline);color:var(--ink);font:800 max(12px,3cqh)/1.2 var(--font-body);padding:1.4cqh 2.4cqh;border-radius:999px;border:2px solid var(--hazard)}
+.rotate{display:none;color:var(--ink);background:var(--outline);font:800 14px/1.3 var(--font-body);padding:8px 14px;border-radius:12px;text-align:center}
+@media (pointer:coarse){
+  .stage{width:min(100%, calc((100dvh - 64px) * 16 / 9))}
+  .bar .keys{display:none}
+}
+@media (pointer:coarse) and (orientation:portrait){.rotate{display:block}}
+body{touch-action:manipulation}
 @container (max-height:320px){.rule{display:none}}
 @media (prefers-reduced-motion:reduce){.btn,.mode,button.card{transition:none}}
 </style>
@@ -145,9 +162,35 @@ kbd{font:800 11px/1 var(--font-body);color:var(--ink);background:var(--outline);
           <button id="d-normal" data-diff="normal" aria-pressed="true">Normal</button>
           <button id="d-hard" data-diff="hard" aria-pressed="false">Hard</button>
         </div>
+        <button class="btn" id="onlineBtn" style="--c:var(--p2)">Play online</button>
       </div>
     </div>
   </div>
+
+  <div class="overlay" id="online" hidden>
+    <div class="panel">
+      <div class="big">Play online</div>
+      <div class="panel" id="onStart" style="padding:0">
+        <input class="field" id="nameIn" maxlength="10" placeholder="Your name" aria-label="Your name" autocomplete="off">
+        <div class="row"><button class="btn" id="createBtn">Create lobby</button></div>
+        <p class="hint">or join a friend</p>
+        <div class="row"><input class="field" id="codeIn" maxlength="5" placeholder="CODE" aria-label="Lobby code" autocomplete="off"><button class="btn ghost" id="joinBtn">Join</button></div>
+      </div>
+      <div class="panel" id="onLobby" style="padding:0" hidden>
+        <p class="hint" id="lobbyHint">Lobby code</p>
+        <div class="code" id="codeShow">-----</div>
+        <div class="row" id="inviteRow"><button class="chip" id="copyBtn">Copy invite link</button><span class="hint" id="copyMsg"></span></div>
+        <div class="cards" id="seatCards"></div>
+        <p class="hint" id="lobbyMsg"></p>
+        <div class="row"><button class="btn" id="startOnline">Start game</button><button class="btn ghost" id="leaveBtn">Leave lobby</button></div>
+      </div>
+      <p class="warn" id="onErr" hidden></p>
+      <div class="row" id="onBackRow"><button class="btn ghost" id="onBack">Back</button></div>
+    </div>
+  </div>
+
+  <video id="remote" playsinline autoplay hidden></video>
+  <div class="toast" id="toast" hidden></div>
 
   <div class="overlay" id="pick" hidden>
     <div class="panel">
@@ -182,12 +225,14 @@ kbd{font:800 11px/1 var(--font-body);color:var(--ink);background:var(--outline);
       <div class="row"><button class="btn" id="again">Rematch</button><button class="btn ghost" id="tomenu">Menu</button></div>
     </div>
   </div>
-</div>
 
-<div class="touch" id="touch" hidden>
-  <div class="g"><button class="up" data-k="up" aria-label="Gas">▲</button><button class="lf" data-k="left" aria-label="Steer left">◀</button><button class="rt" data-k="right" aria-label="Steer right">▶</button><button class="dn" data-k="down" aria-label="Reverse">▼</button></div>
-  <div class="g2"><button class="dash skill" data-k="skill" aria-label="Skill">SKILL</button><button class="dash" data-k="dash" aria-label="Boost">BOOST</button></div>
+  <div class="touch" id="touch" hidden>
+    <div class="tg"><button data-k="left" aria-label="Steer left">◀</button><button data-k="right" aria-label="Steer right">▶</button></div>
+    <div class="tg"><div class="col"><button class="skill" data-k="skill" aria-label="Skill">SKILL</button><button class="boost" data-k="dash" aria-label="Boost">BOOST</button></div><div class="col"><button class="gas" data-k="up" aria-label="Gas">GAS</button><button class="rev" data-k="down" aria-label="Reverse">REV</button></div></div>
+  </div>
 </div>
+<p class="rotate">Turn your phone sideways to play</p>
+
 
 <div class="bar">
   <div class="keys">
@@ -199,9 +244,12 @@ kbd{font:800 11px/1 var(--font-body);color:var(--ink);background:var(--outline);
   </div>
   <button class="chip" id="pausebtn" hidden>Pause</button>
   <button class="chip" id="music">Music: on</button>
+  <button class="chip" id="fullBtn">Full screen</button>
+  <button class="chip" id="leaveOnline" hidden>Leave online game</button>
   <button class="chip" id="mute">Sound: on</button>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 (()=>{
 // Screen space is 960x540 (HUD, menus). The world is a much bigger stadium the camera follows.
@@ -414,7 +462,7 @@ function reset(p){p.hp=p.shownHp=p.maxHp;p.dead=false;p.deadT=0;p.cd=0;p.boostT=
 // ---------- Flow: menu -> (pick teams / boss) -> intro with map wheel -> get ready -> rounds
 let MODE=1;
 function startDemo(){S.phase='demo';S.t=0;S.round=1;S.demoT=0;A=P.slice();A.forEach(p=>{p.cpu=true;p.slot=null;});loadMap(randomMap());place();}
-function toMenu(){['#over','#pause','#ready','#pick'].forEach(s=>$(s).hidden=true);$('#menu').hidden=false;$('#pausebtn').hidden=true;$('#touch').hidden=true;startDemo();}
+function toMenu(){['#over','#pause','#ready','#pick','#online'].forEach(s=>$(s).hidden=true);$('#menu').hidden=false;$('#pausebtn').hidden=true;$('#touch').hidden=true;startDemo();}
 function setMode(m){
   MODE=m;const fill=S.game!=='ffa'||S.fill;
   SLOTS.forEach((sl,i)=>{sl.pad=null;sl.type=m===1?(i===0?'keys':'cpu'):(i<m?'keys':fill?'cpu':'off');});
@@ -431,7 +479,7 @@ function miniCar(p,boss){
   g.translate(60,88);g.rotate(-Math.PI/2);const sc=boss?2.7:2.4;g.scale(sc,sc);carBody(g,{...p,hitT:0,boostT:0});
   if(boss){g.setTransform(1,0,0,1,0,0);crown(g,60,88+15*sc-6,1.3);}return cvs;
 }
-function whoTag(p){return p.cpu?'CPU driver':p.slot.type==='pad'?'Controller '+(p.slot.pad+1):MODE===1?'You':'Player '+(p.i+1);}
+function whoTag(p){return p.cpu?'CPU driver':p.slot.type==='net'?'Online player':p.slot.type==='pad'?'Controller '+(p.slot.pad+1):NET.role?'Host':MODE===1?'You':'Player '+(p.i+1);}
 function renderPick(){
   const teams=S.game==='teams';
   $('#pickTitle').textContent=teams?'Pick your teams':'Who is the Big Boss?';
@@ -488,7 +536,8 @@ const CAPS=[
 ];
 function controlsFor(p){
   if(p.slot.type==='pad')return{gas:['A'],rev:['B'],steer:['Stick'],boost:['X'],skill:['X X','Y']};
-  if(MODE===1)return{gas:['W','↑'],rev:['S','↓'],steer:['A','D','←','→'],boost:['Q','Space'],skill:['Q Q','E']};
+  if(p.slot.type==='net')return{gas:['W','↑','GAS'],rev:['S','↓','REV'],steer:['A','D','◀','▶'],boost:['Space','BOOST'],skill:['E','SKILL']};
+  if(MODE===1||soloKeys())return{gas:['W','↑'],rev:['S','↓'],steer:['A','D','←','→'],boost:['Q','Space'],skill:['Q Q','E']};
   return CAPS[p.i];
 }
 function renderCards(){
@@ -516,7 +565,7 @@ function renderCards(){
 function beginFromReady(){
   if(S.phase!=='ready')return;
   $('#ready').hidden=true;$('#pausebtn').hidden=false;
-  $('#touch').hidden=!(MODE===1&&matchMedia('(pointer:coarse)').matches);
+  $('#touch').hidden=!(soloKeys()&&COARSE);
   S.t=0;S.warned=false;S.zoneWarned=false;S.phase='countdown';S.phaseT=3;pus=[];S.puT=2;S.firstHit=false;
 }
 function startRound(){
@@ -534,7 +583,7 @@ function resume(){if(S.phase==='paused'){S.phase=S.prev;$('#pause').hidden=true;
 const keys={},touch={up:false,down:false,left:false,right:false,dash:false,skill:false};
 const GAME_KEYS=new Set(['Space'].concat(...KEYSETS.map(k=>[].concat(k.up,k.down,k.left,k.right,k.dash,k.skill))));
 addEventListener('keydown',e=>{
-  const inMenus=!$('#menu').hidden||!$('#pick').hidden;
+  const inMenus=(!$('#menu').hidden||!$('#pick').hidden||!$('#online').hidden)&&!(NET.role==='guest'&&NET.watching);
   if(GAME_KEYS.has(e.code)&&!inMenus&&S.phase!=='over')e.preventDefault();
   keys[e.code]=true;
   if(S.phase==='intro'&&!e.repeat){e.preventDefault();showReady();return;}
@@ -546,7 +595,7 @@ addEventListener('keyup',e=>{keys[e.code]=false;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;pause();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
 document.querySelectorAll('.touch button').forEach(b=>{
-  const k=b.dataset.k,on=v=>e=>{e.preventDefault();touch[k]=v;b.classList.toggle('on',v);if(v)b.setPointerCapture?.(e.pointerId);};
+  const k=b.dataset.k,on=v=>e=>{e.preventDefault();touch[k]=v;b.classList.toggle('on',v);if(v)try{b.setPointerCapture(e.pointerId);}catch(_){}};
   b.addEventListener('pointerdown',on(true));['pointerup','pointercancel','lostpointercapture'].forEach(t=>b.addEventListener(t,on(false)));
 });
 function getPads(){try{return navigator.getGamepads?Array.from(navigator.getGamepads()):[];}catch(e){return[];}}
@@ -558,9 +607,11 @@ function padInput(idx){
   const gas=Math.max(b(0)||b(12)||ay<-.6?1:0,bv(7)),rev=Math.max(b(1)||b(13)||ay>.6?1:0,bv(6));
   return{thr:gas-rev,steer:sx,dash:b(2),skill:b(3)||b(5)};
 }
+function soloKeys(){return A.filter(q=>q.slot&&q.slot.type==='keys').length===1;}
 function human(p){
+  if(p.slot.type==='net')return NET.inputs[p.i]||{};
   if(p.slot.type==='pad')return padInput(p.slot.pad);
-  const solo=A.filter(q=>q.slot&&q.slot.type==='keys').length===1;
+  const solo=soloKeys();
   const sets=solo?[KEYSETS[0],KEYSETS[1]]:[KEYSETS[p.i]];
   const any=f=>sets.some(s=>s[f].some(c=>keys[c]));
   const t=solo?touch:{};
@@ -1436,6 +1487,7 @@ function render(t){
 let last=performance.now(),acc=0;
 function frame(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;
+  if(NET.role==='guest'&&NET.watching){guestSend();requestAnimationFrame(frame);return;}
   pollPads();
   if(S.hitStop>0){S.hitStop-=dt;}
   else{acc+=dt;while(acc>=STEP){step(STEP);acc-=STEP;}}
@@ -1473,6 +1525,162 @@ $('#pausebtn').addEventListener('click',()=>S.phase==='paused'?resume():pause())
 $('#mute').addEventListener('click',()=>{initAudio();toggleMute();});
 $('#music').addEventListener('click',()=>{initAudio();musicOn=!musicOn;$('#music').textContent='Music: '+(musicOn?'on':'off');});
 document.addEventListener('pointerdown',()=>initAudio(),{once:true});
+
+
+// ---------- Online lobbies: the host runs the game and streams it live; friends send their controls back
+const COARSE=matchMedia('(pointer:coarse)').matches;
+const NET={role:null,peer:null,code:'',seats:[null,null,null,null],inputs:[{},{},{},{}],conn:null,watching:false,stream:null,lastIn:'',lastSent:0};
+const CODECH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const genCode=()=>Array.from({length:5},()=>CODECH[Math.floor(Math.random()*CODECH.length)]).join('');
+const peerOpts=()=>window.BB_PEER_OPTS||{};
+function onErr(msg){const e=$('#onErr');e.textContent=msg;e.hidden=!msg;}
+function toast(msg,ms=2600){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,ms);}
+function myName(){let n=($('#nameIn').value||'').trim().slice(0,10);if(!n)n='Player';try{localStorage.setItem('bb-name',n);}catch(e){}return n;}
+try{$('#nameIn').value=localStorage.getItem('bb-name')||'';}catch(e){}
+function openOnline(){
+  initAudio();$('#menu').hidden=true;$('#online').hidden=false;onErr('');
+  const inLobby=NET.role==='host';$('#onStart').hidden=inLobby;$('#onLobby').hidden=!inLobby;$('#onBackRow').hidden=false;
+  if(inLobby)renderSeats();else $('#nameIn').focus();
+}
+function closeOnline(){$('#online').hidden=true;$('#menu').hidden=false;}
+function noRTC(){if(!window.Peer||!window.RTCPeerConnection){onErr('Online play needs the website version of the game (for example on Netlify) and an internet connection.');return true;}return false;}
+function renderSeats(){
+  const box=$('#seatCards');box.textContent='';box.style.setProperty('--n',4);
+  const host=NET.role==='host',fill=S.game!=='ffa'||S.fill;
+  $('#codeShow').textContent=NET.code;$('#inviteRow').hidden=!host;$('#startOnline').hidden=!host;
+  $('#lobbyHint').textContent=host?'Lobby code: send it to your friends':'You joined lobby';
+  NET.seats.forEach((st,i)=>{
+    const d=document.createElement('div');d.className='card';d.style.setProperty('--c',COLS[i]);
+    const nm=document.createElement('div');nm.className='who';nm.textContent=st?st.name:NAMES[i];
+    const tg=document.createElement('div');tg.className='tag';
+    tg.textContent=st?(i===0?'Host':(NET.role==='guest'&&NET.mySeat===i?'You':'Online')):(fill?'CPU until a friend joins':'Waiting for a friend');
+    d.append(miniCar(P[i],false),nm,tg);box.appendChild(d);
+  });
+  const n=NET.seats.filter(Boolean).length;
+  $('#lobbyMsg').textContent=host?(n<2?'Waiting for friends to join. You can also start now and play against CPU cars.':n+' players in the lobby. Pick the game type on the main menu, then press Start.'):'Waiting for the host to start the game…';
+}
+function broadcast(msg){for(const st of NET.seats)if(st&&st.conn&&st.conn.open)try{st.conn.send(msg);}catch(e){}}
+function sendLobby(){for(const st of NET.seats)if(st&&st.conn&&st.conn.open)try{st.conn.send({t:'lobby',code:NET.code,seats:NET.seats.map(x=>x&&{name:x.name}),you:NET.seats.indexOf(st),game:S.game});}catch(e){}}
+function createLobby(){
+  if(noRTC())return;onErr('');
+  const name=myName();NET.code=genCode();$('#createBtn').disabled=true;
+  const peer=new Peer('bumperbash-'+NET.code,peerOpts());NET.peer=peer;
+  peer.on('open',()=>{NET.role='host';NET.seats=[{name,host:true},null,null,null];$('#createBtn').disabled=false;$('#onStart').hidden=true;$('#onLobby').hidden=false;renderSeats();});
+  peer.on('error',e=>{$('#createBtn').disabled=false;if(e.type==='unavailable-id'){peer.destroy();createLobby();}else if(NET.role!=='host')onErr('Could not create a lobby ('+e.type+'). Check your internet connection and try again.');});
+  peer.on('connection',conn=>{
+    conn.on('data',d=>hostData(conn,d));
+    conn.on('close',()=>dropGuest(conn));conn.on('error',()=>dropGuest(conn));
+  });
+  peer.on('disconnected',()=>{try{peer.reconnect();}catch(e){}});
+}
+function hostData(conn,d){
+  if(!d||typeof d!=='object')return;
+  if(d.t==='hello'){
+    const i=NET.seats.findIndex((x,k)=>k>0&&!x);
+    if(i<0||S.phase!=='demo'){try{conn.send({t:'full'});}catch(e){}setTimeout(()=>conn.close(),300);return;}
+    NET.seats[i]={name:String(d.name||'Player').slice(0,10),conn,peerId:conn.peer};conn.seat=i;NET.inputs[i]={};
+    sfx('horn');toast(NET.seats[i].name+' joined');renderSeats();sendLobby();
+  }else if(d.t==='bye'){dropGuest(conn);
+  }else if(d.t==='in'&&conn.seat!=null){
+    if(NET.seats[conn.seat])NET.seats[conn.seat].seen=performance.now();
+    NET.inputs[conn.seat]={thr:clamp(+d.thr||0,-1,1),steer:clamp(+d.steer||0,-1,1),dash:!!d.dash,skill:!!d.skill};
+  }
+}
+function dropGuest(conn){
+  const i=conn.seat;if(i==null||!NET.seats[i]||NET.seats[i].conn!==conn)return;
+  const nm=NET.seats[i].name;NET.seats[i]=null;NET.inputs[i]={};
+  const p=P[i];if(A.includes(p)&&S.phase!=='demo'){SLOTS[i].type='cpu';p.cpu=true;p.slot=SLOTS[i];announce(nm.toUpperCase()+' LEFT',C.muted,3);}
+  toast(nm+' left');renderSeats();sendLobby();
+}
+function hostStream(){
+  if(NET.stream)return NET.stream;
+  const st=cv.captureStream(30);
+  try{initAudio();const dst=AC.createMediaStreamDestination();OUT.connect(dst);const tr=dst.stream.getAudioTracks()[0];if(tr)st.addTrack(tr);}catch(e){}
+  return NET.stream=st;
+}
+function startOnline(){
+  const fill=S.game!=='ffa'||S.fill;
+  SLOTS.forEach((sl,i)=>{const st=NET.seats[i];sl.pad=null;sl.type=st?(st.host?'keys':'net'):(fill?'cpu':'off');});
+  if(SLOTS.filter(x=>x.type!=='off').length<2)SLOTS[1].type='cpu';
+  A=P.filter((p,i)=>SLOTS[i].type!=='off');
+  A.forEach(p=>{p.slot=SLOTS[p.i];p.cpu=p.slot.type==='cpu';const st=NET.seats[p.i];p.name=st?st.name:NAMES[p.i];});
+  MODE=Math.max(1,NET.seats.filter(Boolean).length);
+  const stream=hostStream();
+  NET.seats.forEach((st,i)=>{if(st&&st.conn&&st.conn.open){
+    if(!st.call||!st.call.open){try{st.call=NET.peer.call(st.peerId,stream);}catch(e){}}
+    st.conn.send({t:'start',seat:i,car:NAMES[i]});}});
+  $('#online').hidden=true;
+  if(S.game==='ffa')startIntro();else showPick();
+}
+function leaveOnline(){
+  try{NET.peer&&NET.peer.destroy();}catch(e){}
+  NET.role=null;NET.peer=null;NET.seats=[null,null,null,null];NET.inputs=[{},{},{},{}];NET.stream=null;NET.watching=false;NET.conn=null;
+  P.forEach((p,i)=>p.name=NAMES[i]);$('#remote').hidden=true;$('#leaveOnline').hidden=true;
+  if(location.hash)history.replaceState(null,'',location.pathname+location.search);
+}
+// ----- guest side
+function joinLobby(code){
+  if(noRTC())return;onErr('');
+  code=(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);
+  if(code.length!==5){onErr('Lobby codes have 5 letters or numbers.');return;}
+  const name=myName();$('#joinBtn').disabled=true;
+  const peer=new Peer(undefined,peerOpts());NET.peer=peer;
+  const fail=msg=>{$('#joinBtn').disabled=false;onErr(msg);try{peer.destroy();}catch(e){}NET.peer=null;NET.role=null;};
+  const timer=setTimeout(()=>{if(NET.role!=='guest')fail('Could not reach that lobby. Check the code and that the host still has the game open.');},12000);
+  peer.on('open',()=>{
+    const conn=peer.connect('bumperbash-'+code,{reliable:true});NET.conn=conn;
+    conn.on('open',()=>{clearTimeout(timer);NET.role='guest';NET.code=code;$('#joinBtn').disabled=false;conn.send({t:'hello',name});$('#onStart').hidden=true;$('#onLobby').hidden=false;renderSeats();$('#leaveOnline').hidden=false;});
+    conn.on('data',guestData);
+    conn.on('close',()=>{if(NET.role==='guest'){showHostGone();}});
+  });
+  peer.on('call',call=>{
+    call.answer();
+    call.on('stream',st=>{const v=$('#remote');v.srcObject=st;v.hidden=false;NET.watching=true;
+      ['#menu','#online','#pick','#ready','#over','#pause'].forEach(x=>$(x).hidden=true);
+      $('#touch').hidden=!COARSE;
+      v.play().catch(()=>{v.muted=true;v.play().catch(()=>{});toast('Tap the game to turn on sound',4000);});});
+  });
+  peer.on('error',e=>{if(e.type==='peer-unavailable'){clearTimeout(timer);fail('No lobby with that code. Check it with the host.');}else if(NET.role!=='guest'){clearTimeout(timer);fail('Connection problem ('+e.type+'). Try again.');}});
+}
+function guestData(d){
+  if(!d||typeof d!=='object')return;
+  if(d.t==='lobby'){NET.mySeat=d.you;d.seats.forEach((x,i)=>NET.seats[i]=x);renderSeats();}
+  else if(d.t==='start'){NET.mySeat=d.seat;toast('Game on! You drive '+d.car+'.');}
+  else if(d.t==='full'){onErr('That lobby is full or already playing. Ask the host to go back to the menu.');try{NET.peer.destroy();}catch(e){}NET.role=null;}
+}
+function showHostGone(){NET.watching=false;$('#remote').hidden=true;$('#touch').hidden=true;leaveOnline();$('#menu').hidden=true;$('#online').hidden=false;$('#onStart').hidden=false;$('#onLobby').hidden=true;onErr('The host closed the lobby.');}
+function guestInput(){
+  const sets=[KEYSETS[0],KEYSETS[1]],any=f=>sets.some(s=>s[f].some(c=>keys[c]));
+  return{thr:(any('up')||touch.up?1:0)-(any('down')||touch.down?1:0),steer:(any('right')||touch.right?1:0)-(any('left')||touch.left?1:0),dash:any('dash')||!!keys.Space||!!touch.dash,skill:any('skill')||!!keys.KeyE||!!touch.skill};
+}
+function guestSend(){
+  const c=NET.conn;if(!c||!c.open)return;
+  const i=guestInput(),k=JSON.stringify(i),now=performance.now();
+  if(k!==NET.lastIn||now-NET.lastSent>150){try{c.send({t:'in',...i});}catch(e){}NET.lastIn=k;NET.lastSent=now;}
+}
+setInterval(()=>{if(NET.role==='guest'&&!NET.watching)guestSend();},100);
+// drop friends who disappear without saying goodbye
+setInterval(()=>{if(NET.role!=='host')return;const now=performance.now();for(const st of NET.seats)if(st&&st.conn&&st.seen&&now-st.seen>5000)dropGuest(st.conn);},1000);
+addEventListener('pagehide',()=>{if(NET.role==='guest'&&NET.conn&&NET.conn.open)try{NET.conn.send({t:'bye'});}catch(e){}});
+$('#remote').addEventListener('pointerdown',()=>{const v=$('#remote');if(v.muted){v.muted=false;v.play().catch(()=>{});}});
+$('#onlineBtn').addEventListener('click',openOnline);
+$('#onBack').addEventListener('click',()=>{if(NET.role==='guest'){leaveOnline();$('#onStart').hidden=false;$('#onLobby').hidden=true;}closeOnline();});
+$('#createBtn').addEventListener('click',createLobby);
+$('#joinBtn').addEventListener('click',()=>joinLobby($('#codeIn').value));
+$('#codeIn').addEventListener('keydown',e=>{if(e.key==='Enter')joinLobby($('#codeIn').value);});
+$('#startOnline').addEventListener('click',startOnline);
+$('#leaveBtn').addEventListener('click',()=>{if(NET.role==='host')broadcast({t:'bye'});leaveOnline();$('#onStart').hidden=false;$('#onLobby').hidden=true;onErr('');});
+$('#leaveOnline').addEventListener('click',()=>{leaveOnline();location.reload();});
+$('#copyBtn').addEventListener('click',()=>{const url=location.origin+location.pathname+'#'+NET.code;
+  const ok=()=>{$('#copyMsg').textContent='Copied! Send it to your friends.';},no=()=>{$('#copyMsg').textContent=url;};
+  try{navigator.clipboard.writeText(url).then(ok,no);}catch(e){no();}});
+// ----- phone helpers
+$('#fullBtn').addEventListener('click',()=>{const el=document.documentElement;
+  const go=el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen?el.webkitRequestFullscreen():null;
+  Promise.resolve(go).then(()=>{try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{});}catch(e){}}).catch(()=>toast('Full screen is not available here'));});
+if(!COARSE&&!document.fullscreenEnabled)$('#fullBtn').hidden=true;
+// invite links: open the join screen with the code filled in
+{const h=(location.hash||'').slice(1).toUpperCase();if(/^[A-Z0-9]{5}$/.test(h)){$('#codeIn').value=h;setTimeout(()=>{openOnline();$('#nameIn').focus();toast('Type your name and press Join');},300);}}
 
 syncMenu();startDemo();requestAnimationFrame(frame);
 document.fonts&&document.fonts.ready.then(()=>{STANDS=bakeStands();if(M)M.floor=buildFloor(M);});
